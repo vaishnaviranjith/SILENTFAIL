@@ -1,0 +1,39 @@
+{
+  "name": "silentfail",
+  "private": true,
+  "version": "1.0.0",
+  "description": "SILENTFAIL - mutation testing that shows you where your test suite is blind.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:windows": "node scripts/dev.mjs",
+    "dev:api": "npm run dev -w @silentfail/api",
+    "dev:web": "npm run dev -w @silentfail/web",
+    "build": "npm run build -w @silentfail/web",
+    "start": "npm run start -w @silentfail/api",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "test": "npm run test --workspaces --if-present",
+    "test:core": "npm run test -w @silentfail/core",
+    "demo": "tsx scripts/demo.ts",
+    "verify": "node scripts/verify.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@types/node": "22.20.2",
+    "eslint": "9.39.5",
+    "globals": "16.5.0",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.0",
+    "vitest": "3.2.7"
+  }
+}
