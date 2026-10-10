@@ -6,7 +6,9 @@ This document prepares truthful listing copy and a platform-by-platform decision
 
 ## Release status we can verify
 
-- GitHub Actions run 38041671971 passed typecheck, lint, tests, and frontend build for the branch commit checked in that run.
+- GitHub Actions run 38042072045 passed typecheck, lint, tests, and frontend build on Node.js 20.19 for the pre-remediation branch commit.
+- The dependency remediation workflow run 38042285314 upgraded Vitest, applied compatible audit fixes, passed `npm audit --audit-level=high` with zero vulnerabilities reported, and passed `npm run verify`. Its bot commit is `b6e9f624cc262690693292f78e32a9f32ac30b8a`.
+- Rebuild the final marketplace package and verify the exact final commit after dependency remediation before publishing; the earlier ZIP is a valid pre-remediation artifact, not the final sales package.
 - Pull request #1 is still open as a draft and is not merged into `main`.
 - Automated CI is not a browser smoke test, hosted deployment, security audit, or proof that a buyer can install the package without help.
 - No live public product URL, demo recording, seller account, customer, or revenue has been verified.
