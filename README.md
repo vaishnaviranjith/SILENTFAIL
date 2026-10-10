@@ -86,7 +86,7 @@ docs/SECURITY.md         threat model and hardening notes
 
 ## Run locally
 
-Requirements: Node.js 20.11 or newer.
+Requirements: Node.js 20.19 or newer.
 
 ```bash
 npm ci
