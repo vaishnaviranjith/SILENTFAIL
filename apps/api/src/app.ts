@@ -26,7 +26,7 @@ export function createApp(options: AppOptions = {}) {
     path.resolve(process.cwd(), '../web/dist'),
   ];
   const webDist = webDistCandidates.find((candidate) => existsSync(path.join(candidate, 'index.html')))
-    ?? webDistCandidates[0];
+    ?? path.resolve(process.cwd(), 'apps/web/dist');
   const webIndex = path.join(webDist, 'index.html');
 
   app.disable('x-powered-by');
