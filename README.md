@@ -89,7 +89,7 @@ docs/SECURITY.md         threat model and hardening notes
 Requirements: Node.js 20.11 or newer.
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -169,6 +169,10 @@ automated tests, UI polish, documentation, and final validation.
 - Add persistent history and line/branch coverage visualisation.
 - Add streaming progress over Server-Sent Events for very large projects.
 - Expand the operator catalogue and detect equivalent mutants more aggressively.
+
+## Buyer and release readiness
+
+See [`docs/BUYER_GUIDE.md`](docs/BUYER_GUIDE.md) for the initial target users, supported use case, honest sales positioning, and release/hosting gates. GitHub Actions runs the automated verification suite on pushes and pull requests; a green CI result does not replace manual browser and security checks.
 
 ## License
 
