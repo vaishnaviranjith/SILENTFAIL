@@ -19,7 +19,14 @@ export function createApp(options: AppOptions = {}) {
   const store = options.store ?? new RunStore();
   const runAnalysis = options.analyze ?? analyzeProject;
   const demoOnly = process.env['SILENTFAIL_DEMO_ONLY'] === 'true';
-  const webDist = path.resolve(process.cwd(), 'apps/web/dist');
+  // Workspace scripts run with apps/api as the working directory on Render,
+  // while local commands may run from the repository root. Support both.
+  const webDistCandidates = [
+    path.resolve(process.cwd(), 'apps/web/dist'),
+    path.resolve(process.cwd(), '../web/dist'),
+  ];
+  const webDist = webDistCandidates.find((candidate) => existsSync(path.join(candidate, 'index.html')))
+    ?? webDistCandidates[0];
   const webIndex = path.join(webDist, 'index.html');
 
   app.disable('x-powered-by');
