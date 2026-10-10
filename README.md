@@ -4,6 +4,10 @@
 
 Mutation testing that shows you where your test suite is blind.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/vaishnaviranjith/SILENTFAIL/tree/improve/product-ready-ci)
+
+A safe, limited hosted preview can be created from `render.yaml`. Keep `SILENTFAIL_DEMO_ONLY=true`; the public preview runs only the built-in fixture and disables custom test verification. See [Hosted demo deployment](docs/HOSTED_DEMO.md).
+
 SILENTFAIL is a local-first developer tool for the uncomfortable case where CI is
 green but the implementation is still under-protected. It makes a small, meaningful
 change to real JavaScript, runs the real test suite in an isolated process, and
@@ -86,10 +90,10 @@ docs/SECURITY.md         threat model and hardening notes
 
 ## Run locally
 
-Requirements: Node.js 20.11 or newer.
+Requirements: Node.js 20.19 or newer.
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -169,6 +173,10 @@ automated tests, UI polish, documentation, and final validation.
 - Add persistent history and line/branch coverage visualisation.
 - Add streaming progress over Server-Sent Events for very large projects.
 - Expand the operator catalogue and detect equivalent mutants more aggressively.
+
+## Buyer and release readiness
+
+See [`docs/BUYER_GUIDE.md`](docs/BUYER_GUIDE.md) for target users, supported use cases, honest sales positioning, and release/hosting gates. See [`docs/SELLING_PLAN.md`](docs/SELLING_PLAN.md) for the revenue-first pilot strategy, proposed pricing tests, source-code sale route, listing copy, and deal checklist, and [`docs/OUTREACH_TEMPLATES.md`](docs/OUTREACH_TEMPLATES.md) for first-customer outreach and demo scripts. GitHub Actions runs the automated verification suite on pushes and pull requests; a green CI result does not replace manual browser and security checks.
 
 ## License
 

@@ -25,6 +25,16 @@ describe('API contract', () => {
     });
   });
 
+  it('allows the local web app origin but does not reflect arbitrary origins', async () => {
+    await withServer(async (base) => {
+      const local = await fetch(`${base}/api/health`, { headers: { origin: 'http://localhost:5173' } });
+      expect(local.headers.get('access-control-allow-origin')).toBe('http://localhost:5173');
+
+      const untrusted = await fetch(`${base}/api/health`, { headers: { origin: 'https://untrusted.example' } });
+      expect(untrusted.headers.get('access-control-allow-origin')).toBeNull();
+    });
+  });
+
   it('returns structured validation errors and never accepts an unsafe path', async () => {
     await withServer(async (base) => {
       const response = await fetch(`${base}/api/analyze`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'bad', files: [{ path: '../secret.js', content: 'x', kind: 'source' }] }) });
@@ -33,5 +43,35 @@ describe('API contract', () => {
       expect(body.code).toBe('INVALID_PROJECT');
       expect(body.details.join(' ')).toContain('safe relative path');
     });
+  });
+
+  it('public demo mode never executes visitor-supplied source and disables custom verification', async () => {
+    const previous = process.env['SILENTFAIL_DEMO_ONLY'];
+    process.env['SILENTFAIL_DEMO_ONLY'] = 'true';
+    try {
+      await withServer(async (base) => {
+        const demoResponse = await fetch(`${base}/api/demo`);
+        const demo = await demoResponse.json();
+        demo.files[0].content += '\\nprocess.exit(0);';
+        const analyze = await fetch(`${base}/api/analyze`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(demo),
+        });
+        expect(analyze.status).toBe(403);
+        expect((await analyze.json()).code).toBe('PUBLIC_DEMO_ONLY');
+
+        const verify = await fetch(`${base}/api/verify`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ project: demo }),
+        });
+        expect(verify.status).toBe(403);
+        expect((await verify.json()).code).toBe('PUBLIC_DEMO_ONLY');
+      });
+    } finally {
+      if (previous === undefined) delete process.env['SILENTFAIL_DEMO_ONLY'];
+      else process.env['SILENTFAIL_DEMO_ONLY'] = previous;
+    }
   });
 });

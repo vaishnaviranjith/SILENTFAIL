@@ -1,4 +1,6 @@
 import cors from 'cors';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import express, { type ErrorRequestHandler, type Request, type Response } from 'express';
 import { analyzeProject, AnalysisInputError, AnalysisTimeoutError, NodeProcessExecutor, OpenAiCompatibleExplainer } from '@silentfail/core';
 import { validateProject, type ProjectInput } from '@silentfail/shared';
@@ -16,9 +18,39 @@ export function createApp(options: AppOptions = {}) {
   const app = express();
   const store = options.store ?? new RunStore();
   const runAnalysis = options.analyze ?? analyzeProject;
+  const demoOnly = process.env['SILENTFAIL_DEMO_ONLY'] === 'true';
+  // Workspace scripts run with apps/api as the working directory on Render,
+  // while local commands may run from the repository root. Support both.
+  const webDistCandidates = [
+    path.resolve(process.cwd(), 'apps/web/dist'),
+    path.resolve(process.cwd(), '../web/dist'),
+  ];
+  const webDist = webDistCandidates.find((candidate) => existsSync(path.join(candidate, 'index.html')))
+    ?? path.resolve(process.cwd(), 'apps/web/dist');
+  const webIndex = path.join(webDist, 'index.html');
 
   app.disable('x-powered-by');
-  app.use(cors({ origin: true, methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['content-type'] }));
+  const allowedOrigins = new Set([
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    ...(process.env['SILENTFAIL_WEB_ORIGINS'] ?? '')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
+  ]);
+  app.use(cors({
+    origin(origin, callback) {
+      // Requests without an Origin header (for example curl or server-to-server)
+      // are not browser cross-origin requests and remain supported.
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      callback(null, allowedOrigins.has(origin));
+    },
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['content-type'],
+  }));
   app.use(express.json({ limit: MAX_JSON, strict: true }));
 
   app.get('/api/health', (_req, res) => {
@@ -53,11 +85,27 @@ export function createApp(options: AppOptions = {}) {
       return;
     }
     try {
+      // In the public preview, execute only the committed fixture. Never execute
+      // source or tests supplied by an anonymous visitor.
+      let project = validation.project;
+      if (demoOnly) {
+        const demo = await loadDemoProject();
+        const matchesDemo = validation.project.isDemo
+          && JSON.stringify(validation.project.files) === JSON.stringify(demo.files);
+        if (!matchesDemo) {
+          res.status(403).json({
+            error: 'The public preview runs only the built-in demo. Download SILENTFAIL to analyze your own project.',
+            code: 'PUBLIC_DEMO_ONLY',
+          });
+          return;
+        }
+        project = demo;
+      }
       const run = await runAnalysis({
-        project: validation.project,
+        project,
         executor: new NodeProcessExecutor(),
         ai: new OpenAiCompatibleExplainer(),
-        label: validation.project.isDemo ? 'Demo baseline' : 'Project analysis',
+        label: demoOnly ? 'Public demo baseline' : (project.isDemo ? 'Demo baseline' : 'Project analysis'),
       });
       store.add(run);
       res.status(201).json(run);
@@ -67,6 +115,13 @@ export function createApp(options: AppOptions = {}) {
   });
 
   app.post('/api/verify', async (req: Request, res: Response, next) => {
+    if (demoOnly) {
+      res.status(403).json({
+        error: 'Suggested-test verification is disabled in the public preview. Download SILENTFAIL to run the complete workflow locally.',
+        code: 'PUBLIC_DEMO_ONLY',
+      });
+      return;
+    }
     const validation = validateProject(req.body?.project);
     if (!validation.ok || !validation.project) {
       res.status(400).json({ error: 'Project payload is invalid.', code: 'INVALID_PROJECT', details: validation.errors });
@@ -85,6 +140,14 @@ export function createApp(options: AppOptions = {}) {
     } catch (error) {
       next(error);
     }
+  });
+
+  // Serve the built frontend from the same origin in the hosted preview.
+  if (existsSync(webIndex)) app.use(express.static(webDist));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
+    if (existsSync(webIndex)) return res.sendFile(webIndex);
+    return next();
   });
 
   app.use((_req, res) => {
