@@ -13,5 +13,3 @@ services:
         value: 22.16.0
       - key: SILENTFAIL_DEMO_ONLY
         value: "true"
-      - key: NODE_ENV
-        value: production
