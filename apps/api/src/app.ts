@@ -18,7 +18,27 @@ export function createApp(options: AppOptions = {}) {
   const runAnalysis = options.analyze ?? analyzeProject;
 
   app.disable('x-powered-by');
-  app.use(cors({ origin: true, methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['content-type'] }));
+  const allowedOrigins = new Set([
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    ...(process.env['SILENTFAIL_WEB_ORIGINS'] ?? '')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
+  ]);
+  app.use(cors({
+    origin(origin, callback) {
+      // Requests without an Origin header (for example curl or server-to-server)
+      // are not browser cross-origin requests and remain supported.
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      callback(null, allowedOrigins.has(origin));
+    },
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['content-type'],
+  }));
   app.use(express.json({ limit: MAX_JSON, strict: true }));
 
   app.get('/api/health', (_req, res) => {
