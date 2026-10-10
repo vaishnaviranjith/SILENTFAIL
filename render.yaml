@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: silentfail-demo-vaishnavi
+    runtime: node
+    plan: free
+    branch: improve/product-ready-ci
+    buildCommand: npm ci --include=dev && npm run verify
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: SILENTFAIL_DEMO_ONLY
+        value: "true"
+      - key: NODE_ENV
+        value: production
