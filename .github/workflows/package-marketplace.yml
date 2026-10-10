@@ -2,6 +2,20 @@ name: Package marketplace source
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "package-lock.json"
+      - "apps/**"
+      - "packages/**"
+      - "fixtures/**"
+      - "docs/**"
+      - "scripts/**"
+      - "README.md"
+      - "LICENSE"
+      - ".env.example"
+      - ".github/workflows/package-marketplace.yml"
   push:
     branches:
       - "improve/product-ready-ci"
