@@ -1,0 +1,82 @@
+name: Package marketplace source
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "improve/product-ready-ci"
+    paths:
+      - "package.json"
+      - "package-lock.json"
+      - "apps/**"
+      - "packages/**"
+      - "fixtures/**"
+      - "docs/**"
+      - "README.md"
+      - "LICENSE"
+      - ".github/workflows/package-marketplace.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: marketplace-package-\${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    name: Verify and package source
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.11"
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Verify project
+        run: npm run verify
+
+      - name: Create clean source archive
+        run: |
+          mkdir -p dist-marketplace
+          git archive --format=tar HEAD \
+            README.md LICENSE package.json package-lock.json \
+            apps packages fixtures docs .env.example \
+            | tar -xf - -C dist-marketplace
+          cat > dist-marketplace/MARKETPLACE_PACKAGE_README.txt <<'EOF'
+          SILENTFAIL source package
+
+          Start here:
+          - Read README.md for requirements, supported scope, and setup.
+          - Use Node.js 20.11 or newer.
+          - Install locked dependencies with npm ci.
+          - Run the verification suite with npm run verify.
+          - Start the development app with npm run dev.
+
+          Important limitations:
+          - Initial support is focused on JavaScript CommonJS .js/.cjs and the documented built-in test/expect API.
+          - TypeScript, ESM, arbitrary dependency installation, and I/O-heavy projects are not promised.
+          - The executor is defense in depth, not a hardened kernel boundary for hostile multi-tenant code uploads.
+          - Do not deploy as a public service executing arbitrary customer code without independently tested isolation hardening.
+          - The repository is MIT-licensed. Review LICENSE and third-party dependency licenses before redistribution.
+          EOF
+          tar -czf SILENTFAIL-source-\${GITHUB_SHA::12}.tar.gz -C dist-marketplace .
+          zip -qr SILENTFAIL-source-\${GITHUB_SHA::12}.zip dist-marketplace
+
+      - name: Upload source archives
+        uses: actions/upload-artifact@v4
+        with:
+          name: silentfail-marketplace-source-\${{ github.sha }}
+          path: |
+            SILENTFAIL-source-*.zip
+            SILENTFAIL-source-*.tar.gz
+          if-no-files-found: error
+          retention-days: 14
