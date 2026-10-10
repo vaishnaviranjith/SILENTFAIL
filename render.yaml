@@ -3,6 +3,7 @@ services:
     name: silentfail-demo-vaishnavi
     runtime: node
     plan: free
+    autoDeployTrigger: off
     branch: improve/product-ready-ci
     buildCommand: npm ci --include=dev && npm run verify
     startCommand: npm start
