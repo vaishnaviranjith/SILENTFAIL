@@ -44,4 +44,34 @@ describe('API contract', () => {
       expect(body.details.join(' ')).toContain('safe relative path');
     });
   });
+
+  it('public demo mode never executes visitor-supplied source and disables custom verification', async () => {
+    const previous = process.env['SILENTFAIL_DEMO_ONLY'];
+    process.env['SILENTFAIL_DEMO_ONLY'] = 'true';
+    try {
+      await withServer(async (base) => {
+        const demoResponse = await fetch(`${base}/api/demo`);
+        const demo = await demoResponse.json();
+        demo.files[0].content += '\\nprocess.exit(0);';
+        const analyze = await fetch(`${base}/api/analyze`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(demo),
+        });
+        expect(analyze.status).toBe(403);
+        expect((await analyze.json()).code).toBe('PUBLIC_DEMO_ONLY');
+
+        const verify = await fetch(`${base}/api/verify`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ project: demo }),
+        });
+        expect(verify.status).toBe(403);
+        expect((await verify.json()).code).toBe('PUBLIC_DEMO_ONLY');
+      });
+    } finally {
+      if (previous === undefined) delete process.env['SILENTFAIL_DEMO_ONLY'];
+      else process.env['SILENTFAIL_DEMO_ONLY'] = previous;
+    }
+  });
 });
