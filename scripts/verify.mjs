@@ -9,12 +9,15 @@ const checks = [
 
 for (const [name, args] of checks) {
   console.log(`\n== ${name} ==`);
-  await run('npm', args);
+  // Render sets NODE_ENV=production for Node services. React's act() test
+  // helper requires the test build, so override NODE_ENV only for test runs.
+  const env = name === 'tests' ? { ...process.env, NODE_ENV: 'test' } : process.env;
+  await run('npm', args, env);
 }
 
-function run(command, args) {
+function run(command, args, env = process.env) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { stdio: 'inherit', shell: false });
+    const child = spawn(command, args, { stdio: 'inherit', shell: false, env });
     child.on('error', reject);
     child.on('exit', (code) => code === 0 ? resolve() : reject(new Error(`${command} ${args.join(' ')} exited ${code}`)));
   });
