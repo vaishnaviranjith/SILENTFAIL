@@ -4,6 +4,10 @@
 
 Mutation testing that shows you where your test suite is blind.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/vaishnaviranjith/SILENTFAIL/tree/improve/product-ready-ci)
+
+A safe, limited hosted preview can be created from `render.yaml`. Keep `SILENTFAIL_DEMO_ONLY=true`; the public preview runs only the built-in fixture and disables custom test verification. See [Hosted demo deployment](docs/HOSTED_DEMO.md).
+
 SILENTFAIL is a local-first developer tool for the uncomfortable case where CI is
 green but the implementation is still under-protected. It makes a small, meaningful
 change to real JavaScript, runs the real test suite in an isolated process, and
