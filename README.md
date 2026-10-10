@@ -172,7 +172,7 @@ automated tests, UI polish, documentation, and final validation.
 
 ## Buyer and release readiness
 
-See [`docs/BUYER_GUIDE.md`](docs/BUYER_GUIDE.md) for the initial target users, supported use case, honest sales positioning, and release/hosting gates. GitHub Actions runs the automated verification suite on pushes and pull requests; a green CI result does not replace manual browser and security checks.
+See [`docs/BUYER_GUIDE.md`](docs/BUYER_GUIDE.md) for target users, supported use cases, honest sales positioning, and release/hosting gates. See [`docs/SELLING_PLAN.md`](docs/SELLING_PLAN.md) for the revenue-first pilot strategy, proposed pricing tests, source-code sale route, listing copy, and deal checklist, and [`docs/OUTREACH_TEMPLATES.md`](docs/OUTREACH_TEMPLATES.md) for first-customer outreach and demo scripts. GitHub Actions runs the automated verification suite on pushes and pull requests; a green CI result does not replace manual browser and security checks.
 
 ## License
 
