@@ -49,7 +49,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.11"
+          node-version: "20.19"
           cache: npm
 
       - name: Install locked dependencies
@@ -70,7 +70,7 @@ jobs:
 
           Start here:
           - Read README.md for requirements, supported scope, and setup.
-          - Use Node.js 20.11 or newer.
+          - Use Node.js 20.19 or newer.
           - Install locked dependencies with npm ci.
           - Run the verification suite with npm run verify.
           - Start the development app with npm run dev.
