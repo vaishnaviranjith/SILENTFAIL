@@ -26,6 +26,8 @@ on:
       - "packages/**"
       - "fixtures/**"
       - "docs/**"
+      - "scripts/**"
+      - ".env.example"
       - "README.md"
       - "LICENSE"
       - ".github/workflows/package-marketplace.yml"
